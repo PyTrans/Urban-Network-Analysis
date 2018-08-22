@@ -1,6 +1,7 @@
 import networkx as nx
 import math
 
+
 class Node:
     """
     Class for handling node object in Transportation Networks
@@ -11,9 +12,11 @@ class Node:
                 identifier of a node
     
     """
-    def __init__(self,node_id = 0):
+
+    def __init__(self, node_id=0):
         self.node_id = node_id
-        
+
+
 class Link(object):
     """
     Class for handling link object in Transportation Networks
@@ -63,7 +66,7 @@ class Link(object):
             link travel time based on the BPR function
         
     """
-    
+
     def __init__(self, **kwargs):
         self.link_id = None
         self.length = 0.0
@@ -73,15 +76,14 @@ class Link(object):
         self.from_node = 0
         self.to_node = 0
         self.flow = 0.0
-        
+
         self.free_speed = 1.0
         self._time = None
         self.v = 0.
-        self.SO=False
-        
-        for k,v in kwargs.items():
-            self.__dict__[k] = v
+        self.SO = False
 
+        for k, v in kwargs.items():
+            self.__dict__[k] = v
 
     def get_time(self):
         """
@@ -91,7 +93,7 @@ class Link(object):
         """
         return self.bpr()
 
-    def bpr(self, alpha = None, beta = None, flow = None):
+    def bpr(self, alpha=None, beta=None, flow=None):
         """
         Method for calculating the BPR function
         
@@ -117,24 +119,24 @@ class Link(object):
         if not flow:
             flow = self.flow
         if not alpha:
-            alpha=self.alpha
-            
+            alpha = self.alpha
+
         try:
-            return (self.t0)*(1+float(alpha)*(float(flow)/float(self.capacity))**float(beta))
+            return (self.t0) * (1 + float(alpha) * (float(flow) / float(self.capacity)) ** float(beta))
         except:
             print(flow, self.length, self.free_speed, self.capacity, beta)
             raise
-            
+
     @property
     def t0(self):
-        return float(self.length)/float(self.free_speed)
+        return float(self.length) / float(self.free_speed)
 
     @property
     def time(self):
         if self._time:
             return self._time
         return self.get_time()
-    
+
     def get_objective_function(self):
         """
         Method for calculating objective function value
@@ -144,9 +146,10 @@ class Link(object):
         float
             objective function value        
         """
-        return self.t0*self.flow + self.t0*self.alpha*math.pow(self.flow, self.beta+1)/(math.pow(self.capacity, self.beta)*(self.beta+1))
-        
-        
+        return self.t0 * self.flow + self.t0 * self.alpha * math.pow(self.flow, self.beta + 1) / (
+        math.pow(self.capacity, self.beta) * (self.beta + 1))
+
+
 class Network():
     """
     Class for handling Transportation Networks. This class contains methods to read various TNTP format files from the source and methods of network-wide operations
@@ -176,18 +179,18 @@ class Network():
     od_vols :       dictionary
                     key: tuple(origin node, destination node), value: traffic flow
     """
-    link_fields = {"from":1, "to":2, "capacity":3, "length": 4, "t0": 5, \
+    link_fields = {"from": 1, "to": 2, "capacity": 3, "length": 4, "t0": 5, \
                    "B": 6, "beta": 7, "V": 8}
-    
+
     def __init__(self, link_file, trip_file, node_file=None, SO=False):
         self.link_file = link_file
         self.trip_file = trip_file
         self.node_file = node_file
         self.graph = None
-        self.SO=SO
-        
+        self.SO = SO
+
         self.build_datastructure()
-        
+
     def build_datastructure(self):
         """
         Method for opening .tntp format network information files and preparing variables for the analysis
@@ -199,12 +202,12 @@ class Network():
 
         for l in links:
             graph.add_edge(l.from_node, l.to_node, object=l, time=l.get_time())
-            
+
         if self.node_file != None:
             self.open_node_file(graph)
             Visualization.reLocateLinks(graph)
-        self.graph=graph
-        
+        self.graph = graph
+
     def open_link_file(self):
         """
         Method for opening network file, containing various link information
@@ -229,7 +232,7 @@ class Network():
                 header_found = True
             elif header_found:
                 links_info.append(line)
-                
+
         nodes = {}
         links = []
 
@@ -246,22 +249,20 @@ class Network():
             alpha = float(data[self.link_fields["B"]])
             beta = float(data[self.link_fields["beta"]])
 
-
             if origin_node not in nodes:
-                n = Node(node_id = origin_node)
+                n = Node(node_id=origin_node)
                 nodes[origin_node] = n
 
             if to_node not in nodes:
-                n = Node(node_id= to_node)
+                n = Node(node_id=to_node)
                 nodes[to_node] = n
 
             l = Link(link_id=len(links), length=length, capacity=capacity, alpha=alpha, beta=beta,
-                      from_node=origin_node, to_node=to_node, flow=float(0.0), SO=self.SO)
-            
+                     from_node=origin_node, to_node=to_node, flow=float(0.0), SO=self.SO)
+
             links.append(l)
         return links, nodes.values()
-    
-    
+
     def open_node_file(self, graph):
         """
         Method for opening node file, containing position information of nodes \n
@@ -276,16 +277,15 @@ class Network():
 
             else:
                 try:
-                    if self.node_file=="berlin-center_node.tntp":
+                    if self.node_file == "berlin-center_node.tntp":
                         ind, x, y = str(int(row[0])), float(row[1]), float(row[3])
                     else:
                         ind, x, y = str(int(row[0])), float(row[1]), float(row[2])
-                    graph.node[ind]["pos"]=(x, y)
+                    graph.node[ind]["pos"] = (x, y)
                 except:
                     print(row)
         f.close()
-        
-        
+
     def open_trip_file(self, demand_factor=1.0):
         """
         Method for opening trip tables containing OD flows of each OD pair
@@ -316,13 +316,13 @@ class Network():
                 for el in to_process.split(";"):
                     try:
                         dest = str(int(el.split(":")[0]))
-                        demand = float(el.split(":")[1])*demand_factor
+                        demand = float(el.split(":")[1]) * demand_factor
                         self.od_vols[current_origin, dest] = demand
                     except:
                         continue
         origins = [str(i) for i, j in self.od_vols]
         self.origins = list(dict.fromkeys(origins).keys())
-    
+
     def all_or_nothing_assignment(self):
         """
         Method for implementing all-or-nothing assignment based on the current graph. \n
@@ -341,18 +341,19 @@ class Network():
                 fnode, tnode = path[p], path[p + 1]
                 self.graph[fnode][tnode]["object"].vol += odvol
 
-
     def update_linkcost(self):
         """
         Method for updating link travel time.
         """
         for (u, v, d) in self.graph.edges(data=True):
             self.graph[u][v]["weight"] = d["object"].time
-    
+
+
 class Visualization():
     """
     Class for handling visualization effect
     """
+
     def reLocateLinks(graph):
         """
         Method for modifying links in graph
@@ -362,17 +363,16 @@ class Visualization():
         graph:  networkx DiGraph
                 graph to present
         """
-        nodeposition = nx.get_node_attributes(graph,"pos")
+        nodeposition = nx.get_node_attributes(graph, "pos")
         for edge in graph.edges():
             snode, enode = edge[0], edge[1]
             px1, py1 = nodeposition[snode][0], nodeposition[snode][1]
             px2, py2 = nodeposition[enode][0], nodeposition[enode][1]
-            fx, fy, tx, ty = Visualization.reLocateAlink(px1, py1, px2,py2, offset=5000)
+            fx, fy, tx, ty = Visualization.reLocateAlink(px1, py1, px2, py2, offset=5000)
             graph[snode][enode]["pos_fnode"] = (fx, fy)
             graph[snode][enode]["pos_tnode"] = (tx, ty)
 
-
-    def reLocateAlink(px1, py1, px2,py2, offset=0.5):
+    def reLocateAlink(px1, py1, px2, py2, offset=0.5):
         """
         Method for adjusting location of a link
         
@@ -419,5 +419,4 @@ class Visualization():
         else:
             fx, fy = x1 + offset * sin, y1 - offset * cos
             tx, ty = x2 + offset * sin, y2 - offset * cos
-        return fx, fy, tx,ty
-    
+        return fx, fy, tx, ty

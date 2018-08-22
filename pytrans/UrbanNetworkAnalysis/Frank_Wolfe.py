@@ -55,6 +55,14 @@ class Run:
     >>> fw.showODFlowMap()
     """
     def __init__(self, link_file, trip_file, node_file, SO):
+
+        """
+
+        :param link_file: Link file - Bargera Network type
+        :param trip_file: OD file - Bargera Network type
+        :param node_file: Node file - Bargera Network type
+        :param SO: Whether the objective function is of System Optimum or not (User Equilibrium)
+        """
         self.SO = SO
         
         nw = tn.Network(link_file, trip_file, node_file, self.SO)
