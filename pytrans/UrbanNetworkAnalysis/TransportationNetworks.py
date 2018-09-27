@@ -356,7 +356,8 @@ class Network():
 
             od_dic[origin][destination] = self.od_vols[origin, destination]
         self.od_dic = od_dic
-
+    def get_od_dic(self):
+        return self.od_dic
     def all_or_nothing_assignment(self):
         """
         Method for implementing all-or-nothing assignment based on the current graph. \n

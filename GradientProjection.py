@@ -6,7 +6,7 @@ import os
 import sys
 import pytrans.UrbanNetworkAnalysis.visualize_graph as v
 from scipy.misc import derivative
-
+import pytrans.UrbanNetworkAnalysis.TransportationNetworks as loadProblem
 
 class GradientProjection(object):
     def __init__(self, network, ods, use_simpy, SO, tol=1e-4):
@@ -273,8 +273,8 @@ class GradientProjection(object):
         return total_gap / (self.total_trips)
 
 
-import pytrans.UrbanNetworkAnalysis.TransportationNetworks as loadProblem
-folder="./"
+
+
 datafolder="./Data/TransportationNetworks/SiouxFalls/"
 link_file = datafolder+"SiouxFalls_net.tntp"
 trip_file = datafolder+"SiouxFalls_trips.tntp"
@@ -296,6 +296,6 @@ graph, ods = bch.graph, bch.od_dic
 
 gp = GradientProjection(graph, ods, use_simpy, bch.SO, 1e-3)
 
-solution_UE, by_id_links_UE, objetive_function_history_UE = gp.solve()
+solution, by_id_links, objetive_function_history_UE = gp.solve()
 
 
