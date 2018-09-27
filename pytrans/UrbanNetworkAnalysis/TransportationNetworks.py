@@ -1,6 +1,6 @@
 import networkx as nx
 import math
-
+from scipy.misc import derivative
 
 class Node:
     """
@@ -126,7 +126,10 @@ class Link(object):
         except:
             print(flow, self.length, self.free_speed, self.capacity, beta)
             raise
-
+    def gettotalcost_l(self, flow):
+        return float(flow)*self.bpr(flow=flow)
+    def getmarginalcost_l(self, v):
+        return derivative(self.gettotalcost_l, v)
     @property
     def t0(self):
         return float(self.length) / float(self.free_speed)
@@ -146,8 +149,30 @@ class Link(object):
         float
             objective function value        
         """
+        return self.t0 * self.flow + self.t0 * self.alpha * math.pow(self.flow, self.beta + 1) / (math.pow(self.capacity, self.beta) * (self.beta + 1))
+
+    def get_bpr_objective_function(self):
+        """
+        Method for calculating objective function value
+
+        Return
+        ------
+        float
+            objective function value
+        """
         return self.t0 * self.flow + self.t0 * self.alpha * math.pow(self.flow, self.beta + 1) / (
         math.pow(self.capacity, self.beta) * (self.beta + 1))
+
+    def get_total_travel_time_function(self):
+        """
+        Method for calculating objective function value
+
+        Return
+        ------
+        float
+            objective function value
+        """
+        return self.get_time()*self.flow
 
 
 class Network():
@@ -207,6 +232,7 @@ class Network():
             self.open_node_file(graph)
             Visualization.reLocateLinks(graph)
         self.graph = graph
+
 
     def open_link_file(self):
         """
@@ -322,6 +348,14 @@ class Network():
                         continue
         origins = [str(i) for i, j in self.od_vols]
         self.origins = list(dict.fromkeys(origins).keys())
+
+        od_dic = {}
+        for (origin, destination) in self.od_vols:
+            if origin not in od_dic:
+                od_dic[origin] = {}
+
+            od_dic[origin][destination] = self.od_vols[origin, destination]
+        self.od_dic = od_dic
 
     def all_or_nothing_assignment(self):
         """
